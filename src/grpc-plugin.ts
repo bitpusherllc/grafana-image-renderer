@@ -1,4 +1,5 @@
 import * as grpc from 'grpc';
+import * as protoLoader from '@grpc/proto-loader';
 import { Logger } from './logger';
 import { Browser } from './browser';
 
@@ -6,8 +7,29 @@ const SERVER_ADDRESS = '127.0.0.1:50059';
 const RENDERER_PROTO_PATH = __dirname + '/../proto/renderer.proto';
 const GRPC_HEALTH_PROTO_PATH = __dirname + '/../proto/health.proto';
 
-export const RENDERER_PROTO = grpc.load(RENDERER_PROTO_PATH).models;
-export const GRPC_HEALTH_PROTO = grpc.load(GRPC_HEALTH_PROTO_PATH).grpc.health.v1;
+export const RENDERER_PACKAGE_DEFINITION = protoLoader.loadSync(
+    RENDERER_PROTO_PATH,
+    {keepCase: false,
+     longs: String,
+     enums: String,
+     defaults: true,
+     oneofs: true
+    });
+
+export const GRPC_HEALTH_PACKAGE_DEFINITION = protoLoader.loadSync(
+    GRPC_HEALTH_PROTO_PATH,
+    {keepCase: false,
+     longs: String,
+     enums: String,
+     defaults: true,
+     oneofs: true
+    });
+
+export const RENDERER_PACKAGE_OBJECT = grpc.loadPackageDefinition(RENDERER_PACKAGE_DEFINITION);
+export const GRPC_HEALTH_PACKAGE_OBJECT = grpc.loadPackageDefinition(GRPC_HEALTH_PACKAGE_DEFINITION);
+
+export const RENDERER_PROTO = RENDERER_PACKAGE_OBJECT['models']['Renderer'];
+export const GRPC_HEALTH_PROTO = GRPC_HEALTH_PACKAGE_OBJECT['grpc']['health']['v1']['Health'];
 
 
 export class GrpcPlugin {
@@ -18,10 +40,10 @@ export class GrpcPlugin {
   start() {
     var server = new grpc.Server();
 
-    server.addService(GRPC_HEALTH_PROTO.Health.service, {
+    server.addService(GRPC_HEALTH_PROTO.service, {
       check: this.check.bind(this),
     });
-    server.addService(RENDERER_PROTO.Renderer.service, {
+    server.addService(RENDERER_PROTO.service, {
       render: this.render.bind(this),
     });
 

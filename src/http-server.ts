@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import express = require('express');
 import { Logger } from './logger';
 import { Browser } from './browser';
-import * as boom from 'boom';
+import * as boom from '@hapi/boom';
 import morgan = require('morgan');
 
 export class HttpServer {
